@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>RoastRank | Coffee Rating</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@700;800&display=swap"
+    rel="stylesheet"
+  >
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <header>
+    <nav class="navbar">
+      <div class="logo">☕ RoastRank</div>
+
+      <a href="#leaderboard" class="nav-link">
+        Leaderboard
+      </a>
+    </nav>
+
+    <div class="hero">
+      <p class="eyebrow">DISCOVER • RATE • RANK</p>
+
+      <h1>Find the roast<br>worth waking up for.</h1>
+
+      <p class="hero-text">
+        Explore coffees from around the world and vote for
+        the blends that deserve the top spot.
+      </p>
+
+      <a href="#coffees" class="explore-btn">
+        Explore Coffees ↓
+      </a>
+    </div>
+  </header>
+
+
+  <main>
+
+    <!-- Stats -->
+    <section class="stats">
+      <div>
+        <span id="coffeeCount">0</span>
+        <p>Coffees</p>
+      </div>
+
+      <div>
+        <span id="voteCount">0</span>
+        <p>Total Votes</p>
+      </div>
+
+      <div>
+        <span id="countryCount">0</span>
+        <p>Origins</p>
+      </div>
+    </section>
+
+
+    <!-- Leaderboard -->
+    <section id="leaderboard" class="section">
+
+      <div class="section-heading">
+        <p class="eyebrow">COMMUNITY FAVORITES</p>
+        <h2>Top Rated Roasts</h2>
+        <p>The coffees currently leading the community vote.</p>
+      </div>
+
+      <div id="leaderboardContainer" class="leaderboard-grid">
+      </div>
+
+    </section>
+
+
+    <!-- Coffee collection -->
+    <section id="coffees" class="section coffees-section">
+
+      <div class="section-heading">
+        <p class="eyebrow">THE COLLECTION</p>
+        <h2>Explore Every Roast</h2>
+        <p>Find your favorite and cast your vote.</p>
+      </div>
+
+
+      <!-- Search + Filters -->
+      <div class="controls">
+
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Search coffee..."
+        >
+
+        <select id="originFilter">
+          <option value="all">All Origins</option>
+        </select>
+
+        <select id="roastFilter">
+          <option value="all">All Roasts</option>
+          <option value="Light">Light Roast</option>
+          <option value="Medium">Medium Roast</option>
+          <option value="Dark">Dark Roast</option>
+        </select>
+
+      </div>
+
+
+      <div id="coffeeContainer" class="coffee-grid">
+
+        <p class="loading">
+          Brewing the coffee list...
+        </p>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <footer>
+    <div class="logo">☕ RoastRank</div>
+    <p>Built for people who take their coffee seriously.</p>
+  </footer>
+
+
+  <script src="script.js"></script>
+
+</body>
+</html>
