@@ -1,5 +1,4 @@
-const API_URL = "https://coffee-rating-api-tlbd.onrender.com";
-
+const API_URL = "https://coffee-rating-api-tlbd.onrender.com/api/coffees";
 let coffees = [];
 
 const coffeeContainer =
