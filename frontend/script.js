@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:5000/api/coffees";
+const API_URL = "https://coffee-rating-api-tlbd.onrender.com";
 
 let coffees = [];
 
