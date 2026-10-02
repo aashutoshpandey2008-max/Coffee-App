@@ -1,5 +1,16 @@
-const API_URL = "https://coffee-rating-api-tlbd.onrender.com/api/coffees";
+// ========================================
+// API CONFIGURATION
+// ========================================
+
+const API_URL =
+  "https://coffee-rating-api-tlbd.onrender.com/api/coffees";
+
 let coffees = [];
+
+
+// ========================================
+// DOM ELEMENTS
+// ========================================
 
 const coffeeContainer =
   document.getElementById("coffeeContainer");
@@ -18,19 +29,32 @@ const roastFilter =
 
 
 // ========================================
-// GET COFFEES FROM BACKEND
+// FETCH COFFEES
 // ========================================
 
 async function fetchCoffees() {
   try {
-
     const response = await fetch(API_URL);
 
     if (!response.ok) {
-      throw new Error("Failed to fetch coffees");
+      throw new Error(
+        `Failed to fetch coffees. Status: ${response.status}`
+      );
     }
 
-    coffees = await response.json();
+    const data = await response.json();
+
+    console.log("API data:", data);
+    console.log("Is array:", Array.isArray(data));
+
+    // Make sure API actually returned an array
+    if (!Array.isArray(data)) {
+      throw new Error(
+        "API response is not an array."
+      );
+    }
+
+    coffees = data;
 
     populateOrigins();
     renderCoffees(coffees);
@@ -38,13 +62,12 @@ async function fetchCoffees() {
     updateStats();
 
   } catch (error) {
-
-    console.error(error);
+    console.error("Fetch error:", error);
 
     coffeeContainer.innerHTML = `
       <p class="no-results">
         Unable to load coffees.
-        Make sure the backend server is running.
+        Please try again later.
       </p>
     `;
   }
@@ -52,15 +75,13 @@ async function fetchCoffees() {
 
 
 // ========================================
-// DISPLAY COFFEE CARDS
+// RENDER COFFEE CARDS
 // ========================================
 
 function renderCoffees(data) {
-
   coffeeContainer.innerHTML = "";
 
-  if (data.length === 0) {
-
+  if (!Array.isArray(data) || data.length === 0) {
     coffeeContainer.innerHTML = `
       <p class="no-results">
         No coffees found.
@@ -71,7 +92,6 @@ function renderCoffees(data) {
   }
 
   data.forEach((coffee) => {
-
     const card = document.createElement("article");
 
     card.className = "coffee-card";
@@ -89,14 +109,17 @@ function renderCoffees(data) {
 
       </div>
 
-      <h3>${coffee.name}</h3>
+      <h3>
+        ${coffee.name}
+      </h3>
 
       <p class="rating">
-        ★ ${coffee.rating.toFixed(1)} / 5
+        ★ ${Number(coffee.rating).toFixed(1)} / 5
       </p>
 
       <p class="vote-info">
-        <span>${coffee.votes}</span> community votes
+        <span>${coffee.votes}</span>
+        community votes
       </p>
 
       <button
@@ -113,53 +136,68 @@ function renderCoffees(data) {
 
 
 // ========================================
-// VOTE
+// VOTE FOR COFFEE
 // ========================================
 
 async function vote(id, button) {
-
   try {
-
     button.disabled = true;
     button.textContent = "Voting...";
 
     const response = await fetch(
       `${API_URL}/${id}/vote`,
       {
-        method: "POST"
+        method: "POST",
       }
     );
 
     if (!response.ok) {
-      throw new Error("Vote failed");
+      throw new Error(
+        `Vote failed. Status: ${response.status}`
+      );
     }
 
-    const updatedCoffee = await response.json();
+    const updatedCoffee =
+      await response.json();
+
+    console.log(
+      "Updated coffee:",
+      updatedCoffee
+    );
 
     const index =
       coffees.findIndex(
-        coffee => coffee.id === updatedCoffee.id
+        (coffee) =>
+          coffee.id === updatedCoffee.id
       );
 
     if (index !== -1) {
       coffees[index] = updatedCoffee;
     }
 
+    // Re-render current filtered list
     applyFilters();
 
+    // Update leaderboard instantly
     renderLeaderboard();
+
+    // Update total vote count
     updateStats();
 
   } catch (error) {
+    console.error(
+      "Vote error:",
+      error
+    );
 
-    console.error(error);
-
-    alert("Could not register your vote.");
+    alert(
+      "Could not register your vote. Please try again."
+    );
 
   } finally {
-
     button.disabled = false;
-    button.textContent = "Vote for this roast";
+    button.textContent =
+      "Vote for this roast";
   }
 }
 
@@ -169,107 +207,186 @@ async function vote(id, button) {
 // ========================================
 
 function renderLeaderboard() {
-
-  const topThree = [...coffees]
-    .sort((a, b) => b.votes - a.votes)
-    .slice(0, 3);
-
-  const medals = ["🥇", "🥈", "🥉"];
-
   leaderboardContainer.innerHTML = "";
 
-  topThree.forEach((coffee, index) => {
-
-    const card = document.createElement("div");
-
-    card.className = "leader-card";
-
-    card.innerHTML = `
-      <div class="position">
-        ${medals[index]}
-      </div>
-
-      <h3>${coffee.name}</h3>
-
-      <p>
-        ${coffee.origin} • ${coffee.roast} Roast
-      </p>
-
-      <p>
-        ★ ${coffee.rating.toFixed(1)}
-      </p>
-
-      <p>
-        <strong>${coffee.votes}</strong> votes
+  if (
+    !Array.isArray(coffees) ||
+    coffees.length === 0
+  ) {
+    leaderboardContainer.innerHTML = `
+      <p class="no-results">
+        No leaderboard data available.
       </p>
     `;
 
-    leaderboardContainer.appendChild(card);
-  });
+    return;
+  }
+
+  const topThree =
+    [...coffees]
+      .sort(
+        (a, b) =>
+          Number(b.votes) -
+          Number(a.votes)
+      )
+      .slice(0, 3);
+
+  const medals = [
+    "🥇",
+    "🥈",
+    "🥉"
+  ];
+
+  topThree.forEach(
+    (coffee, index) => {
+
+      const card =
+        document.createElement("div");
+
+      card.className =
+        "leader-card";
+
+      card.innerHTML = `
+        <div class="position">
+          ${medals[index]}
+        </div>
+
+        <h3>
+          ${coffee.name}
+        </h3>
+
+        <p>
+          ${coffee.origin}
+          •
+          ${coffee.roast} Roast
+        </p>
+
+        <p>
+          ★ ${Number(coffee.rating).toFixed(1)}
+        </p>
+
+        <p>
+          <strong>
+            ${coffee.votes}
+          </strong>
+          votes
+        </p>
+      `;
+
+      leaderboardContainer
+        .appendChild(card);
+    }
+  );
 }
 
 
 // ========================================
-// STATS
+// UPDATE STATISTICS
 // ========================================
 
 function updateStats() {
+  if (!Array.isArray(coffees)) {
+    return;
+  }
 
-  document.getElementById("coffeeCount")
-    .textContent = coffees.length;
+  // Number of coffees
+  document
+    .getElementById("coffeeCount")
+    .textContent =
+    coffees.length;
 
+  // Total votes
   const totalVotes =
     coffees.reduce(
-      (total, coffee) => total + coffee.votes,
+      (total, coffee) =>
+        total +
+        Number(coffee.votes || 0),
       0
     );
 
-  document.getElementById("voteCount")
-    .textContent = totalVotes.toLocaleString();
+  document
+    .getElementById("voteCount")
+    .textContent =
+    totalVotes.toLocaleString();
 
+  // Unique countries
   const origins =
-    new Set(coffees.map(coffee => coffee.origin));
+    new Set(
+      coffees.map(
+        (coffee) =>
+          coffee.origin
+      )
+    );
 
-  document.getElementById("countryCount")
-    .textContent = origins.size;
+  document
+    .getElementById("countryCount")
+    .textContent =
+    origins.size;
 }
 
 
 // ========================================
-// ORIGIN FILTER
+// POPULATE ORIGIN FILTER
 // ========================================
 
 function populateOrigins() {
+  if (!Array.isArray(coffees)) {
+    console.error(
+      "populateOrigins expected an array:",
+      coffees
+    );
+
+    return;
+  }
 
   const origins =
-    [...new Set(
-      coffees.map(coffee => coffee.origin)
-    )].sort();
+    [
+      ...new Set(
+        coffees.map(
+          (coffee) =>
+            coffee.origin
+        )
+      )
+    ].sort();
 
-  originFilter.innerHTML =
-    `<option value="all">All Origins</option>`;
+  originFilter.innerHTML = `
+    <option value="all">
+      All Origins
+    </option>
+  `;
 
-  origins.forEach(origin => {
+  origins.forEach(
+    (origin) => {
 
-    const option =
-      document.createElement("option");
+      const option =
+        document.createElement(
+          "option"
+        );
 
-    option.value = origin;
-    option.textContent = origin;
+      option.value = origin;
+      option.textContent = origin;
 
-    originFilter.appendChild(option);
-  });
+      originFilter.appendChild(
+        option
+      );
+    }
+  );
 }
 
 
 // ========================================
-// SEARCH + FILTER
+// SEARCH AND FILTER
 // ========================================
 
 function applyFilters() {
+  if (!Array.isArray(coffees)) {
+    return;
+  }
 
   const search =
-    searchInput.value.toLowerCase().trim();
+    searchInput.value
+      .toLowerCase()
+      .trim();
 
   const selectedOrigin =
     originFilter.value;
@@ -278,30 +395,52 @@ function applyFilters() {
     roastFilter.value;
 
   const filtered =
-    coffees.filter(coffee => {
+    coffees.filter(
+      (coffee) => {
 
-      const matchesSearch =
-        coffee.name.toLowerCase().includes(search) ||
-        coffee.origin.toLowerCase().includes(search);
+        const coffeeName =
+          String(
+            coffee.name || ""
+          ).toLowerCase();
 
-      const matchesOrigin =
-        selectedOrigin === "all" ||
-        coffee.origin === selectedOrigin;
+        const coffeeOrigin =
+          String(
+            coffee.origin || ""
+          ).toLowerCase();
 
-      const matchesRoast =
-        selectedRoast === "all" ||
-        coffee.roast === selectedRoast;
+        const matchesSearch =
+          coffeeName.includes(
+            search
+          ) ||
+          coffeeOrigin.includes(
+            search
+          );
 
-      return (
-        matchesSearch &&
-        matchesOrigin &&
-        matchesRoast
-      );
-    });
+        const matchesOrigin =
+          selectedOrigin === "all" ||
+          coffee.origin ===
+            selectedOrigin;
+
+        const matchesRoast =
+          selectedRoast === "all" ||
+          coffee.roast ===
+            selectedRoast;
+
+        return (
+          matchesSearch &&
+          matchesOrigin &&
+          matchesRoast
+        );
+      }
+    );
 
   renderCoffees(filtered);
 }
 
+
+// ========================================
+// EVENT LISTENERS
+// ========================================
 
 searchInput.addEventListener(
   "input",
